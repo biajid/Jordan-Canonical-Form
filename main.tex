@@ -1,0 +1,4248 @@
+\documentclass[11pt]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage[
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+]{hyperref}
+\usepackage{xcolor}
+\usepackage{verbatim}
+
+% -------------------------------------------------
+% Formatting
+% -------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3cm}
+
+% -------------------------------------------------
+% Theorem Environments
+% -------------------------------------------------
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+% -------------------------------------------------
+% Title
+% -------------------------------------------------
+\title{
+\textbf{Diagonalization of Defective Matrices via the Jordan Canonical Form}\\[0.3cm]
+\large Theoretical Development and Practical Intuition
+}
+
+\author{Biajid Chowdhury}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% =================================================
+% ABSTRACT
+% =================================================
+
+\begin{abstract}
+
+Diagonalizing a square matrix is one of the canonical procedures in
+computational mathematics.  When a matrix possesses a complete set of
+linearly independent eigenvectors, a suitable change of basis transforms
+the matrix into a diagonal matrix.  In that basis, the action of a
+complicated linear operator is reduced to independent scalar
+multiplications.  This simplification has important consequences in
+linear algebra, differential equations, dynamical systems, numerical
+computation, and many other areas of scientific studies.
+
+However, not every matrix possesses enough linearly independent
+eigenvectors to be diagonalized.  Such matrices are called
+\emph{defective}.  At first sight, this appears to bring the
+diagonalization procedure to an abrupt end: the characteristic
+polynomial may provide all the eigenvalues required by the dimension of
+the space, while the corresponding eigenspaces fail to provide enough
+vectors to construct an eigenvector basis.
+
+When a familiar mathematical procedure reaches such an obstruction,
+a new idea is often required.  The Jordan canonical form provides one
+of the most elegant examples of such an idea.  Instead of abandoning
+the simplification offered by eigenvalues and eigenvectors, the theory
+extends the notion of an eigenvector to that of a
+\emph{generalized eigenvector}.  These vectors organize themselves into
+chains that reveal the internal structure hidden behind repeated
+eigenvalues.  In an appropriate basis, a defective matrix can then be
+transformed into a matrix that is not necessarily diagonal, but is as
+close to diagonal as its algebraic structure permits.
+
+The purpose of this note is to develop the Jordan canonical form from
+this point of view.  Rather than presenting Jordan form merely as an
+algorithm for arranging eigenvalues and ones into blocks, we seek to
+understand why generalized eigenvectors arise, why Jordan chains have
+their particular structure, and why the resulting similarity
+transformation works.  Particular emphasis is placed on practical
+intuition so that the underlying ideas remain accessible even when the
+algebra becomes technically demanding.
+
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{Introduction}
+% =================================================
+
+For a diagonalizable matrix \(A\in\mathbb{F}^{n\times n}\), there exists
+an invertible matrix \(P\) such that
+
+\[
+P^{-1}AP=D,
+\]
+
+where \(D\) is diagonal.  If
+
+\[
+P=
+\begin{pmatrix}
+\vert & & \vert\\
+v_1 & \cdots & v_n\\
+\vert & & \vert
+\end{pmatrix},
+\]
+
+then the columns \(v_1,\ldots,v_n\) form a basis of eigenvectors of
+\(A\), and
+
+\[
+Av_i=\lambda_i v_i.
+\]
+
+Consequently,
+
+\[
+D=
+\operatorname{diag}
+(\lambda_1,\ldots,\lambda_n).
+\]
+
+The importance of this representation is difficult to overstate.
+A matrix that may originally mix many coordinates simultaneously is
+replaced, in the eigenvector basis, by independent scalar actions.
+For example,
+
+\[
+D^k=
+\operatorname{diag}
+(\lambda_1^k,\ldots,\lambda_n^k),
+\]
+
+and
+
+\[
+e^{tD}
+=
+\operatorname{diag}
+(e^{\lambda_1t},\ldots,e^{\lambda_nt}).
+\]
+
+Thus powers of matrices, matrix exponentials, systems of differential
+equations, and many questions concerning long-term dynamical behavior
+become considerably easier once a suitable eigenvector basis is known.
+
+There is, however, a fundamental difficulty.
+
+Suppose an \(n\times n\) matrix has \(n\) eigenvalues when algebraic
+multiplicity is counted, but the corresponding eigenspaces fail to
+provide \(n\) linearly independent eigenvectors.  We can no longer
+construct the matrix \(P\) entirely from ordinary eigenvectors.
+Diagonalization therefore fails.
+
+This raises the central question of this note:
+
+\[
+\boxed{
+\text{What should we do when the eigenvectors run out?}
+}
+\]
+
+The Jordan canonical form provides an answer by asking us not to
+discard the available eigenvectors, but instead to investigate the
+structure surrounding them.
+
+Suppose now that an eigenvalue \(\lambda\) has algebraic multiplicity
+\(m>1\).  Ideally, we would like to find \(m\) linearly independent
+eigenvectors associated with \(\lambda\).  If this happens, the repeated
+eigenvalue itself causes no difficulty for diagonalization.
+
+The difficulty arises when the eigenspace
+
+\[
+E_\lambda=\ker(A-\lambda I)
+\]
+
+has dimension strictly smaller than the algebraic multiplicity of
+\(\lambda\).  In other words,
+
+\[
+\dim\ker(A-\lambda I)<m.
+\]
+
+Then there are not enough ordinary eigenvectors associated with
+\(\lambda\) to account for all \(m\) occurrences of that eigenvalue in
+the characteristic polynomial.
+
+For example, suppose that \(\lambda\) has algebraic multiplicity \(3\),
+but
+
+\[
+\dim\ker(A-\lambda I)=1.
+\]
+
+Then we can find only one linearly independent ordinary eigenvector,
+say \(v_1\), satisfying
+
+\[
+(A-\lambda I)v_1=0.
+\]
+
+At this point ordinary diagonalization has run out of eigenvectors.
+However, rather than abandoning the eigenvalue \(\lambda\), we ask
+whether there are other vectors that are connected to its eigenspace
+through the operator \(A-\lambda I\).
+
+In particular, we search for a vector \(v_2\) satisfying
+
+\[
+(A-\lambda I)v_2=v_1.
+\]
+
+The vector \(v_2\) is not an ordinary eigenvector, since
+\((A-\lambda I)v_2\neq 0\).  Nevertheless, applying
+\(A-\lambda I\) once sends \(v_2\) directly into the eigenspace.
+
+If another vector is still required, we may search for \(v_3\)
+satisfying
+
+\[
+(A-\lambda I)v_3=v_2.
+\]
+
+The resulting vectors form the chain
+
+\[
+v_3
+\;\xrightarrow{\,A-\lambda I\,}\;
+v_2
+\;\xrightarrow{\,A-\lambda I\,}\;
+v_1
+\;\xrightarrow{\,A-\lambda I\,}\;
+0.
+\]
+
+Thus,
+
+\[
+(A-\lambda I)v_1=0,
+\]
+
+\[
+(A-\lambda I)v_2=v_1,
+\]
+
+and
+
+\[
+(A-\lambda I)v_3=v_2.
+\]
+
+The vector \(v_1\) is an ordinary eigenvector, while \(v_2\) and
+\(v_3\) are generalized eigenvectors.  Together they form what is
+called a \emph{Jordan chain} associated with the eigenvalue
+\(\lambda\).
+
+This construction provides the missing basis vectors that ordinary
+eigenvectors could not supply.  As we shall see, the structure of this
+chain is precisely what produces a Jordan block.
+The purpose of this note is not merely to state this construction.
+We will develop it gradually from the failure of ordinary
+diagonalization.  We will examine the role of the operator
+
+\[
+N=A-\lambda I,
+\]
+
+study the nested null spaces
+
+\[
+\ker(N)
+\subseteq
+\ker(N^2)
+\subseteq
+\ker(N^3)
+\subseteq\cdots,
+\]
+
+and show how these spaces reveal the lengths and number of Jordan
+chains.  This will naturally lead to generalized eigenvectors, Jordan
+blocks, the minimal polynomial, and finally the Jordan canonical form.
+
+Throughout the development, theoretical arguments will be accompanied
+by practical interpretations and explicit examples.  The objective is
+to make the Jordan construction feel less like a collection of
+algebraic rules and more like a natural response to the failure of
+ordinary diagonalization.  Even when the mathematics becomes
+technically involved, the reader should be able to retain a clear
+picture of what the matrix is doing and why each new construction is
+needed.
+
+% =================================================
+\section{Prerequisites}
+% =================================================
+
+This note assumes that the reader has already mastered the basic
+theory of eigenvalues, eigenvectors, and diagonalization.  In
+particular, the reader should be comfortable with the eigenvalue
+equation
+
+\[
+Av=\lambda v,
+\]
+
+and its equivalent homogeneous system
+
+\[
+(A-\lambda I)v=0.
+\]
+
+The reader should also know how to obtain eigenvalues from the
+characteristic equation
+
+\[
+\det(A-\lambda I)=0,
+\]
+
+and how to determine the eigenspace associated with an eigenvalue
+\(\lambda\),
+
+\[
+E_\lambda
+=
+\ker(A-\lambda I).
+\]
+
+We further assume familiarity with algebraic and geometric
+multiplicity.  If an eigenvalue \(\lambda\) occurs \(m\) times as a
+root of the characteristic polynomial, then its algebraic multiplicity
+is \(m\).  Its geometric multiplicity is
+
+\[
+\dim\ker(A-\lambda I).
+\]
+
+For every eigenvalue,
+
+\[
+1
+\leq
+\text{geometric multiplicity}
+\leq
+\text{algebraic multiplicity}.
+\]
+
+The reader should also be familiar with ordinary diagonalization.  If
+an \(n\times n\) matrix \(A\) possesses \(n\) linearly independent
+eigenvectors \(v_1,\ldots,v_n\), then
+
+\[
+P=
+\begin{pmatrix}
+\vert & & \vert\\
+v_1 & \cdots & v_n\\
+\vert & & \vert
+\end{pmatrix}
+\]
+
+is invertible and
+
+\[
+P^{-1}AP=D,
+\]
+
+where \(D\) is diagonal.
+
+Equivalently,
+
+\[
+AP=PD.
+\]
+
+This latter form is particularly useful because it exposes what
+diagonalization actually means:
+
+\[
+A
+\begin{pmatrix}
+\vert & & \vert\\
+v_1 & \cdots & v_n\\
+\vert & & \vert
+\end{pmatrix}
+=
+\begin{pmatrix}
+\vert & & \vert\\
+v_1 & \cdots & v_n\\
+\vert & & \vert
+\end{pmatrix}
+\begin{pmatrix}
+\lambda_1 & & 0\\
+& \ddots &\\
+0 & & \lambda_n
+\end{pmatrix}.
+\]
+
+Thus diagonalization is fundamentally a search for a basis in which
+the action of the linear operator becomes as simple as possible.
+
+Finally, basic familiarity with null spaces, rank, basis, linear
+independence, similarity transformations, and matrix multiplication is
+assumed.
+
+No previous knowledge of generalized eigenvectors, Jordan chains,
+minimal polynomials, or the Jordan canonical form is required.  These
+ideas will be developed from the beginning.
+
+
+% =================================================
+\section{Historical Development of the Jordan Canonical Form}
+% =================================================
+
+The Jordan canonical form did not emerge as an isolated construction.
+It grew out of a much broader nineteenth-century effort to understand
+linear transformations through their characteristic quantities and to
+find coordinate systems in which those transformations take their
+simplest possible forms.
+
+\subsection{The Road Toward Eigenvalue Decomposition}
+
+The ideas that we now organize under the language of eigenvalues,
+eigenvectors, and matrix diagonalization developed gradually over a
+long period of time.  Their origins can be traced to problems involving
+systems of linear equations, differential equations, quadratic forms,
+mechanics, and astronomy.
+
+During the eighteenth century, mathematicians such as
+\textbf{Leonhard Euler} and \textbf{Joseph-Louis Lagrange} encountered
+what we would now recognize as eigenvalue problems while studying
+systems of differential equations and small oscillations in mechanical
+systems.  In such problems, certain special modes of motion allowed a
+complicated coupled system to be separated into simpler independent
+motions.
+
+The subject advanced considerably during the nineteenth century.
+\textbf{Augustin-Louis Cauchy} developed important results involving
+determinants, characteristic equations, and quadratic forms.  These
+ideas helped establish the connection between characteristic roots and
+the simplification of linear transformations.
+
+At the same time, the theory of determinants and linear substitutions
+was becoming increasingly systematic.  Mathematicians were gradually
+recognizing a central principle: although the numerical entries used
+to represent a linear transformation depend on the chosen coordinates,
+certain underlying properties of the transformation remain unchanged.
+
+This naturally led to the search for special coordinate systems in
+which a linear transformation could be represented as simply as
+possible.
+
+In modern language, one of the most desirable outcomes of this search
+is \emph{eigenvalue decomposition}, or diagonalization.  When enough
+independent eigenvectors exist, the transformation can be represented
+by a diagonal matrix.  A complicated coupled transformation is thereby
+reduced to a collection of independent scalar actions.
+
+This was an extraordinarily powerful idea.  But it came with an
+important limitation: not every linear transformation possesses enough
+independent eigenvectors to permit such a complete diagonal reduction.
+
+The question therefore became broader than diagonalization itself:
+
+\begin{center}
+\emph{If complete diagonal reduction is impossible, what is the
+simplest form to which a linear transformation can still be reduced?}
+\end{center}
+
+It was in the development of this broader problem that Camille Jordan
+entered the story.
+
+\subsection{Camille Jordan and Canonical Reduction}
+
+\textbf{Marie Ennemond Camille Jordan} (1838--1922) was a French
+mathematician whose work had a major influence on nineteenth-century
+algebra.  His contributions extended well beyond the subject discussed
+in this note and included important work in group theory, algebra,
+analysis, and geometry.
+
+Jordan was particularly interested in the theory of substitutions.
+In the terminology of the period, a linear substitution described what
+we would now naturally regard as a linear transformation represented
+through a system of linear expressions.
+
+The fundamental problem was one of classification and reduction.
+Rather than accepting the potentially complicated original
+representation of a transformation, mathematicians wanted to determine
+whether it could be converted into a simpler standard form without
+losing its essential algebraic information.
+
+Jordan developed a systematic theory for carrying this reduction much
+further, including precisely those situations in which a complete
+diagonal reduction was unavailable.
+
+His treatment appeared prominently in his monumental 1870 work
+
+\begin{center}
+\emph{Trait\'e des substitutions et des \'equations alg\'ebriques}.
+\end{center}
+
+The canonical structure associated with this work eventually became
+known as the \emph{Jordan canonical form}, or \emph{Jordan normal
+form}.
+
+Jordan's contribution was important because it showed that the failure
+of diagonalization was not the end of the simplification process.
+Even when a transformation could not be completely decomposed into
+independent eigendirections, its remaining algebraic structure could
+still be organized into a remarkably simple and systematic canonical
+form.
+
+\subsection{Jordan's Place in a Larger Mathematical Development}
+
+As is often the case with major mathematical theories, the Jordan
+canonical form should not be understood as the product of a single
+mathematician working in isolation.  It emerged from a long development
+involving characteristic equations, determinants, linear
+transformations, invariant quantities, and canonical reduction.
+
+Important related work was carried out by mathematicians including
+Cauchy and, independently in the theory of elementary divisors,
+\textbf{Karl Weierstrass}.  The nineteenth century was a period in
+which many of the ideas that would eventually become modern linear
+algebra were being developed simultaneously from several directions.
+
+Jordan's achievement was to provide a particularly systematic
+canonical theory for linear substitutions.  The language and notation
+used today came later, as matrix theory and abstract linear algebra
+were organized into their modern forms.
+
+Consequently, it would be historically misleading to imagine Jordan
+sitting down with the modern formula
+
+\[
+A=PDP^{-1}
+\]
+
+and attempting to repair it when it failed.  That is a useful modern
+way for us to motivate the subject, but it is not a literal description
+of its historical development.
+
+Historically, the movement was broader:
+
+\[
+\boxed{
+\begin{gathered}
+\text{characteristic equations and special modes}\\
+\longrightarrow\\
+\text{eigenvalue-type ideas and linear substitutions}\\
+\longrightarrow\\
+\text{search for simpler representations}\\
+\longrightarrow\\
+\text{canonical reduction of transformations}\\
+\longrightarrow\\
+\text{Jordan's canonical theory}.
+\end{gathered}
+}
+\]
+
+Today, this history appears in a particularly elegant form in a first
+course in linear algebra.  We first learn that eigenvectors can provide
+a basis in which a matrix becomes diagonal.  We then discover that some
+matrices do not possess enough eigenvectors.  Jordan canonical form
+shows that the nineteenth-century search for simplification does not
+stop there.
+
+With this historical perspective in place, we now return to the
+mathematics.  The first theoretical tool we shall need is the
+Cayley--Hamilton theorem.
+% =================================================
+
+
+% =================================================
+\section{Background: The Cayley--Hamilton Theorem}
+% =================================================
+
+Before developing the theory of generalized eigenvectors and Jordan
+chains, we recall one result that will play an important role throughout
+the discussion: the \emph{Cayley--Hamilton theorem}.
+
+The theorem establishes a remarkable connection between a matrix and
+its own characteristic polynomial.
+
+\subsection{The Characteristic Polynomial}
+
+Let \(A\in\mathbb{F}^{n\times n}\).  We define the characteristic
+polynomial of \(A\) by
+
+\[
+p_A(\lambda)=\det(\lambda I-A).
+\]
+
+Since \(A\) is an \(n\times n\) matrix, \(p_A(\lambda)\) is a polynomial
+of degree \(n\).  It can therefore be written in the form
+
+\[
+p_A(\lambda)
+=
+\lambda^n
++c_{n-1}\lambda^{n-1}
++\cdots
++c_1\lambda
++c_0.
+\]
+
+The eigenvalues of \(A\) are precisely the roots of this polynomial.
+
+For example, suppose that a \(3\times3\) matrix has characteristic
+polynomial
+
+\[
+p_A(\lambda)=(\lambda-2)^3.
+\]
+
+Then \(2\) is the only eigenvalue of \(A\), and it has algebraic
+multiplicity \(3\).
+
+At this stage, however, the characteristic polynomial appears to be a
+statement about the scalar variable \(\lambda\).  The Cayley--Hamilton
+theorem tells us something much stronger: the matrix \(A\) itself
+satisfies this polynomial.
+
+\subsection{The Cayley--Hamilton Theorem}
+
+\begin{theorem}[Cayley--Hamilton Theorem]
+Every square matrix satisfies its own characteristic polynomial.
+
+More precisely, if
+
+\[
+p_A(\lambda)
+=
+\lambda^n
++c_{n-1}\lambda^{n-1}
++\cdots
++c_1\lambda
++c_0,
+\]
+
+then
+
+\[
+\boxed{
+p_A(A)
+=
+A^n
++c_{n-1}A^{n-1}
++\cdots
++c_1A
++c_0I
+=
+0.
+}
+\]
+
+Here \(0\) denotes the zero matrix.
+\end{theorem}
+
+The notation \(p_A(A)\) simply means that the scalar variable
+\(\lambda\) in the characteristic polynomial is replaced by the
+matrix \(A\).  The constant term must consequently be interpreted as
+a multiple of the identity matrix.
+
+For example, if
+
+\[
+p_A(\lambda)
+=
+\lambda^3-6\lambda^2+12\lambda-8,
+\]
+
+then the Cayley--Hamilton theorem gives
+
+\[
+A^3-6A^2+12A-8I=0.
+\]
+
+Thus the matrix obeys the same algebraic relation as the roots of its
+characteristic polynomial.
+
+\subsection{A Particularly Important Repeated-Eigenvalue Case}
+
+The connection with defective matrices becomes especially interesting
+when the characteristic polynomial contains a repeated eigenvalue.
+
+Suppose, for example, that
+
+\[
+p_A(\lambda)=(\lambda-2)^3.
+\]
+
+The Cayley--Hamilton theorem immediately gives
+
+\[
+p_A(A)=0,
+\]
+
+and hence
+
+\[
+\boxed{
+(A-2I)^3=0.
+}
+\]
+
+More generally, if an \(n\times n\) matrix has only one eigenvalue
+\(\lambda_0\), with algebraic multiplicity \(n\), then
+
+\[
+p_A(\lambda)
+=
+(\lambda-\lambda_0)^n,
+\]
+
+and therefore
+
+\[
+\boxed{
+(A-\lambda_0 I)^n=0.
+}
+\]
+
+This observation suggests introducing the shifted matrix
+
+\[
+N=A-\lambda_0 I.
+\]
+
+Then
+
+\[
+A=\lambda_0 I+N
+\]
+
+and Cayley--Hamilton tells us that
+
+\[
+N^n=0.
+\]
+
+A matrix whose sufficiently high power is zero is called
+\emph{nilpotent}.  Thus, in this special situation, subtracting the
+eigenvalue from the matrix exposes a nilpotent part:
+
+\[
+\boxed{
+A=\lambda_0 I+N,
+\qquad
+N^n=0.
+}
+\]
+
+This decomposition will become extremely important when we develop the
+Jordan canonical form.
+
+\subsection{What Does \(N^n=0\) Actually Mean?}
+
+The matrix equation
+
+\[
+N^n=0
+\]
+
+has a useful interpretation in terms of vectors.
+
+For every vector \(v\),
+
+\[
+N^n v=0.
+\]
+
+Thus repeated application of \(N\) must eventually send every vector
+to the zero vector.
+
+For example, if
+
+\[
+N^3=0,
+\]
+
+then for every vector \(v\),
+
+\[
+N^3v=0.
+\]
+
+This does \emph{not} mean that every vector requires exactly three
+applications of \(N\) before reaching zero.
+
+Some vectors may already satisfy
+
+\[
+Nv=0.
+\]
+
+Others may satisfy
+
+\[
+Nv\neq0,
+\qquad
+N^2v=0,
+\]
+
+while still others may satisfy
+
+\[
+Nv\neq0,
+\qquad
+N^2v\neq0,
+\qquad
+N^3v=0.
+\]
+
+Therefore, the statement
+
+\[
+N^3=0
+\]
+
+should be interpreted as saying that three applications are
+\emph{sufficient} for every vector, not that three applications are
+\emph{necessary} for every vector.
+
+Schematically, different vectors may behave as
+
+\[
+v_1
+\xrightarrow{\,N\,}
+0,
+\]
+
+or
+
+\[
+v_2
+\xrightarrow{\,N\,}
+v_1
+\xrightarrow{\,N\,}
+0,
+\]
+
+or
+
+\[
+v_3
+\xrightarrow{\,N\,}
+v_2
+\xrightarrow{\,N\,}
+v_1
+\xrightarrow{\,N\,}
+0.
+\]
+
+This simple observation will later become one of the central ideas
+behind generalized eigenvectors and Jordan chains.
+
+\subsection{Why Cayley--Hamilton Matters for Our Development}
+
+The Cayley--Hamilton theorem does more than provide a convenient
+identity involving powers of a matrix.  It tells us that the
+characteristic polynomial places an algebraic restriction on the
+action of the matrix itself.
+
+In the repeated-eigenvalue example
+
+\[
+p_A(\lambda)=(\lambda-2)^3,
+\]
+
+we know that
+
+\[
+(A-2I)^3=0.
+\]
+
+At the same time, an ordinary eigenvector \(v_1\) associated with
+\(\lambda=2\) satisfies
+
+\[
+(A-2I)v_1=0.
+\]
+
+These two statements naturally raise an important question:
+
+\[
+\boxed{
+\begin{gathered}
+(A-2I)^3 \text{ annihilates every vector,}\\
+\text{but an eigenvector is annihilated after only one application.}\\[2mm]
+\text{What's the logic hiding here?}
+\end{gathered}
+}
+\]
+
+Investigating precisely these intermediate possibilities will lead us
+to generalized eigenvectors, nested null spaces, Jordan chains, and
+ultimately the Jordan canonical form.
+
+
+% =================================================
+% =================================================
+\section{From Ordinary Eigenvectors to Generalized Eigenvectors}
+% =================================================
+
+We are now ready to begin the main development of the Jordan canonical
+form.
+
+Suppose that \(\lambda\) is an eigenvalue of \(A\), but its eigenspace
+does not contain enough linearly independent eigenvectors to construct
+a basis.  Ordinary diagonalization then fails.
+
+The question is not whether the missing directions disappear, but
+whether they can be recovered in a more general form.
+
+Define
+
+\[
+\boxed{
+N=A-\lambda I.
+}
+\]
+
+An ordinary eigenvector \(v\neq 0\) associated with \(\lambda\)
+satisfies
+
+\[
+Nv=0.
+\]
+
+Hence the ordinary eigenspace is
+
+\[
+\boxed{
+E_\lambda
+=
+\ker(A-\lambda I)
+=
+\ker N.
+}
+\]
+
+Thus ordinary eigenvectors are precisely the nonzero vectors that are
+annihilated after one application of \(N\).
+
+
+% -------------------------------------------------
+\subsection{Looking Beyond the Ordinary Eigenspace}
+% -------------------------------------------------
+
+To see where additional vectors may come from, consider first the
+special case in which the characteristic polynomial is
+
+\[
+p_A(x)=(x-\lambda)^m.
+\]
+
+By the Cayley--Hamilton theorem,
+
+\[
+(A-\lambda I)^m=0,
+\]
+
+and therefore
+
+\[
+\boxed{
+N^m=0.
+}
+\]
+
+Consequently,
+
+\[
+N^m v=0
+\]
+
+for every vector \(v\).
+
+This is a much weaker condition than
+
+\[
+Nv=0.
+\]
+
+An ordinary eigenvector is annihilated immediately, but other vectors
+may require several applications of \(N\) before reaching zero.  This
+suggests studying the sequence
+
+\[
+\boxed{
+\ker N
+\subseteq
+\ker N^2
+\subseteq
+\ker N^3
+\subseteq
+\cdots
+\subseteq
+\ker N^m.
+}
+\]
+
+The reason these spaces are nested is simple.  If
+
+\[
+v\in\ker N^j,
+\]
+
+then
+
+\[
+N^jv=0.
+\]
+
+Applying \(N\) once more gives
+
+\[
+N^{j+1}v=N(N^jv)=0,
+\]
+
+and hence
+
+\[
+v\in\ker N^{j+1}.
+\]
+
+Therefore, for every \(j\geq1\),
+
+\[
+\boxed{
+\ker N^j\subseteq\ker N^{j+1}.
+}
+\]
+
+These nested null spaces reveal structure that cannot be seen from the
+ordinary eigenspace alone.
+
+\begin{remark}[Do Not Reverse the Inclusion]
+The implication
+
+\[
+N^jv=0
+\quad\Longrightarrow\quad
+N^{j+1}v=0
+\]
+
+always holds, but the converse need not hold.
+
+A vector may satisfy
+
+\[
+N^{j+1}v=0
+\]
+
+while
+
+\[
+N^jv\neq0.
+\]
+
+Thus
+
+\[
+\ker N^j
+\subseteq
+\ker N^{j+1}
+\]
+
+does not imply equality.  The higher null spaces may contain genuinely
+new vectors.
+
+The direction to remember is therefore
+
+\[
+\boxed{
+Nv=0
+\Longrightarrow
+N^2v=0
+\Longrightarrow
+N^3v=0
+\Longrightarrow
+\cdots,
+}
+\]
+
+and not the other way around.
+\end{remark}
+
+
+% -------------------------------------------------
+\subsection{Generalized Eigenvectors}
+% -------------------------------------------------
+
+The nested null spaces motivate an extension of the ordinary
+eigenvector concept.
+
+\begin{definition}[Generalized Eigenvector]
+Let \(\lambda\) be an eigenvalue of \(A\).  A nonzero vector \(v\) is
+called a \emph{generalized eigenvector} associated with \(\lambda\) if
+
+\[
+\boxed{
+(A-\lambda I)^k v=0
+}
+\]
+
+for some positive integer \(k\).
+
+Equivalently,
+
+\[
+N^k v=0
+\]
+
+for some \(k\geq1\).
+\end{definition}
+
+Ordinary eigenvectors are therefore included automatically: they are
+the special case \(k=1\).
+
+More precisely, if \(k\) is the smallest positive integer for which
+
+\[
+N^k v=0,
+\]
+
+then
+
+\[
+N^{k-1}v\neq0.
+\]
+
+Such a vector is called a generalized eigenvector of \emph{rank \(k\)}.
+Thus
+
+\[
+\boxed{
+N^k v=0,
+\qquad
+N^{k-1}v\neq0
+}
+\]
+
+means that \(v\) requires exactly \(k\) applications of \(N\) to reach
+zero.
+
+Equivalently,
+
+\[
+\boxed{
+v\in\ker N^k\setminus\ker N^{k-1}.
+}
+\]
+
+This gives a natural hierarchy:
+
+\[
+\begin{array}{ccl}
+\ker N
+&:&
+\text{ordinary eigenvectors},\\[1mm]
+\ker N^2\setminus\ker N
+&:&
+\text{rank-2 generalized eigenvectors},\\[1mm]
+\ker N^3\setminus\ker N^2
+&:&
+\text{rank-3 generalized eigenvectors},\\
+&\vdots&\\
+\ker N^k\setminus\ker N^{k-1}
+&:&
+\text{rank-\(k\) generalized eigenvectors}.
+\end{array}
+\]
+
+
+% -------------------------------------------------
+\subsection{From Generalized Eigenvectors to a Chain}
+% -------------------------------------------------
+
+Generalized eigenvectors become especially useful when they are linked
+by successive applications of \(N\).
+
+Suppose \(v_k\) is a generalized eigenvector of rank \(k\).  Define
+
+\[
+v_{k-1}=Nv_k,
+\]
+
+then
+
+\[
+v_{k-2}=Nv_{k-1}=N^2v_k,
+\]
+
+and continue in this way until
+
+\[
+v_1=N^{k-1}v_k.
+\]
+
+Because \(v_k\) has rank \(k\),
+
+\[
+v_1\neq0,
+\]
+
+while
+
+\[
+Nv_1=N^kv_k=0.
+\]
+
+Hence \(v_1\) is an ordinary eigenvector.
+
+The resulting vectors satisfy
+
+\[
+\boxed{
+Nv_1=0,
+\qquad
+Nv_j=v_{j-1},
+\quad
+j=2,\ldots,k.
+}
+\]
+
+Schematically,
+
+\[
+\boxed{
+v_k
+\xrightarrow{\,N\,}
+v_{k-1}
+\xrightarrow{\,N\,}
+\cdots
+\xrightarrow{\,N\,}
+v_2
+\xrightarrow{\,N\,}
+v_1
+\xrightarrow{\,N\,}
+0.
+}
+\]
+
+Thus a rank-\(k\) generalized eigenvector naturally generates a
+sequence of vectors descending through the nested null spaces.
+
+
+% -------------------------------------------------
+\subsection{Jordan Chains}
+% -------------------------------------------------
+
+The preceding sequence is the central structure behind the Jordan
+canonical form.
+
+\begin{definition}[Jordan Chain]
+Let \(\lambda\) be an eigenvalue of \(A\).  A sequence of nonzero
+vectors
+
+\[
+v_1,v_2,\ldots,v_k
+\]
+
+is called a \emph{Jordan chain of length \(k\)} associated with
+\(\lambda\) if
+
+\[
+\boxed{
+(A-\lambda I)v_1=0,
+\qquad
+(A-\lambda I)v_j=v_{j-1},
+\quad
+j=2,\ldots,k.
+}
+\]
+
+Equivalently, with \(N=A-\lambda I\),
+
+\[
+Nv_1=0,
+\qquad
+Nv_j=v_{j-1},
+\quad
+j=2,\ldots,k.
+\]
+\end{definition}
+
+The chain therefore has the form
+
+\[
+\boxed{
+v_k
+\xrightarrow{\,N\,}
+v_{k-1}
+\xrightarrow{\,N\,}
+\cdots
+\xrightarrow{\,N\,}
+v_2
+\xrightarrow{\,N\,}
+v_1
+\xrightarrow{\,N\,}
+0.
+}
+\]
+
+The vector \(v_1\) is an ordinary eigenvector, while \(v_j\) is a
+generalized eigenvector of rank \(j\).  Indeed,
+
+\[
+N^jv_j=0,
+\qquad
+N^{j-1}v_j=v_1\neq0.
+\]
+
+Therefore,
+
+\[
+\boxed{
+v_j\in\ker N^j\setminus\ker N^{j-1}.
+}
+\]
+
+A Jordan chain can thus be viewed as a sequence that connects the
+successive levels of the nested null spaces.
+
+
+% -------------------------------------------------
+\subsection{Why a Jordan Chain Produces a Jordan Block}
+% -------------------------------------------------
+
+The defining relations of a Jordan chain immediately determine how
+\(A\) acts on its vectors.
+
+Since
+
+\[
+N=A-\lambda I,
+\]
+
+The first chain relation,
+
+\[
+Nv_1=0,
+\]
+
+gives, after substituting
+
+\[
+N=A-\lambda I,
+\]
+
+the equation
+
+\[
+(A-\lambda I)v_1=0.
+\]
+
+Expanding,
+
+\[
+Av_1-\lambda Iv_1=0.
+\]
+
+Since
+
+\[
+Iv_1=v_1,
+\]
+
+we obtain
+
+\[
+Av_1-\lambda v_1=0,
+\]
+
+and therefore
+
+\[
+\boxed{
+Av_1=\lambda v_1.
+}
+\]
+
+while
+
+\[
+Nv_j=v_{j-1},
+\qquad j=2,\ldots,k,
+\]
+
+gives, after substituting
+
+\[
+N=A-\lambda I,
+\]
+
+the relation
+
+\[
+(A-\lambda I)v_j=v_{j-1}.
+\]
+
+Expanding the left-hand side,
+
+\[
+Av_j-\lambda Iv_j=v_{j-1}.
+\]
+
+Since
+
+\[
+Iv_j=v_j,
+\]
+
+we obtain
+
+\[
+Av_j-\lambda v_j=v_{j-1}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+Av_j=\lambda v_j+v_{j-1},
+\qquad j=2,\ldots,k.
+}
+\]
+
+Thus the action of \(A\) on the entire Jordan chain is
+
+\[
+\boxed{
+\begin{aligned}
+Av_1 &= \lambda v_1,\\
+Av_2 &= \lambda v_2+v_1,\\
+Av_3 &= \lambda v_3+v_2,\\
+&\ \vdots\\
+Av_j &= \lambda v_j+v_{j-1},\\
+&\ \vdots\\
+Av_k &= \lambda v_k+v_{k-1}.
+\end{aligned}
+}
+\]
+Relative to the ordered chain
+
+\[
+\mathcal{B}=(v_1,v_2,\ldots,v_k),
+\]
+
+these relations are represented by the matrix
+
+\[
+\boxed{
+J_k(\lambda)
+=
+\begin{pmatrix}
+\lambda & 1 & 0 & \cdots & 0\\
+0 & \lambda & 1 & \ddots & \vdots\\
+\vdots & \ddots & \ddots & \ddots & 0\\
+0 & \cdots & 0 & \lambda & 1\\
+0 & \cdots & \cdots & 0 & \lambda
+\end{pmatrix}.
+}
+\]
+
+This matrix is called the \emph{Jordan block of size \(k\)}
+associated with the eigenvalue \(\lambda\).
+
+If the chain vectors form a basis of the space under consideration,
+let
+
+\[
+P=
+\begin{pmatrix}
+\vert & \vert & & \vert\\
+v_1 & v_2 & \cdots & v_k\\
+\vert & \vert & & \vert
+\end{pmatrix}.
+\]
+
+Then the chain relations give
+
+\[
+AP=PJ_k(\lambda),
+\]
+
+and therefore, provided \(P\) is invertible,
+
+\[
+\boxed{
+P^{-1}AP=J_k(\lambda).
+}
+\]
+
+The Jordan block is therefore not an arbitrary substitute for a
+diagonal matrix.  It is the matrix representation naturally produced
+when \(A\) is expressed in a basis organized as a Jordan chain.
+
+
+% -------------------------------------------------
+\subsection{Where Do the Ones Come From?}
+% -------------------------------------------------
+
+The superdiagonal \(1\)'s in a Jordan block are a direct consequence
+of the chain relation
+
+\[
+Av_j=\lambda v_j+v_{j-1}.
+\]
+
+Relative to the ordered basis
+
+\[
+\mathcal{B}=(v_1,v_2,\ldots,v_k),
+\]
+
+the vector \(Av_j\) therefore has coefficient \(\lambda\) in the
+\(v_j\)-direction and coefficient \(1\) in the \(v_{j-1}\)-direction.
+
+Consequently,
+
+\[
+\boxed{
+\lambda\text{ on the diagonal}
+\quad\longleftrightarrow\quad
+\text{the eigenvalue contribution},
+}
+\]
+
+whereas
+
+\[
+\boxed{
+1\text{ on the superdiagonal}
+\quad\longleftrightarrow\quad
+\text{the connection }v_j\mapsto v_{j-1}.
+}
+\]
+
+Thus the \(1\)'s are not inserted merely by convention.  They record
+the defining structure of the Jordan chain:
+
+\[
+\boxed{
+(A-\lambda I)v_j=v_{j-1}.
+}
+\]
+
+This is the fundamental reason that a Jordan block has its
+characteristic form.
+
+If the reader is still having difficulty seeing where the \(1\)'s come
+from, recall the basic rule of matrix--vector multiplication.  The
+\(1\) selects the preceding vector \(v_{j-1}\), while \(\lambda\)
+selects the current vector \(v_j\), giving precisely
+
+\[
+Av_j=v_{j-1}+\lambda v_j.
+\]
+
+If this is still not evident, we recommend reviewing our other notes,
+where matrix--vector and matrix--matrix multiplication are discussed
+explicitly from several different perspectives.
+
+% =================================================
+% =================================================
+\section{Practical Intuition Behind Jordan Chains}
+% =================================================
+
+So far, we have developed the mathematics behind generalized
+eigenvectors, Jordan chains, and Jordan blocks in considerable detail.
+We have used the Cayley--Hamilton theorem, nested null spaces, and the
+operator \(A-\lambda I\) to explain how the Jordan structure arises.
+
+We now temporarily put most of that formal mathematics aside.
+
+The purpose of this section is to develop an intuitive picture of the
+same phenomenon through familiar situations.  If the reader found the
+previous theoretical development difficult, it may actually be useful
+to begin here, develop the intuition, and then return to the preceding
+section.  The algebra may look considerably more natural the second
+time around.
+
+The central puzzle that might remain in our mind comes from comparing
+two facts.
+
+In the single-eigenvalue situation considered earlier, the
+Cayley--Hamilton theorem tells us that, for some positive integer \(k\),
+
+\[
+\boxed{
+(A-\lambda I)^k v=0
+}
+\]
+
+for every vector \(v\).
+
+Yet an ordinary eigenvector \(v_1\) satisfies the much stronger
+condition
+
+\[
+\boxed{
+(A-\lambda I)v_1=0.
+}
+\]
+
+Something interesting is therefore happening.  The operator may require
+several applications before an arbitrary vector is guaranteed to
+disappear, yet this particular vector disappears after only one.
+
+Let us forget matrices for a moment and imagine an everyday situation.
+
+% -------------------------------------------------
+\subsection{The Medicine Analogy}
+% -------------------------------------------------
+
+Suppose a physician prescribes a medicine and determines that a patient
+may require several doses before the treatment is complete.
+
+For the sake of the analogy, suppose that as many as \(k\) doses may
+be required.
+
+We therefore expect something like
+
+\[
+\text{patient}
+\longrightarrow
+\text{dose}
+\longrightarrow
+\text{dose}
+\longrightarrow
+\cdots
+\longrightarrow
+\text{recovery}.
+\]
+
+But something surprising happens.
+
+One particular patient becomes well immediately after the first dose.
+
+Naturally, we would ask:
+
+\begin{center}
+\emph{Why did this patient require only one dose when several doses
+might have been necessary?}
+\end{center}
+
+One possible explanation is that the first dose we observed was not
+really the beginning of the story.  Perhaps the patient had already
+received the same medicine through some other route.  It might have
+been administered previously without our knowledge, or an equivalent
+substance might already have entered the patient's system through some
+other source.
+
+The important point is not the medical details of the analogy.  The
+important point is that an unexpectedly early outcome makes us suspect
+that there may be a \emph{history behind what we are currently
+observing}.
+
+This is precisely the kind of intuition that is useful for the Jordan
+construction.
+
+The Cayley--Hamilton theorem tells us that repeated application of
+
+\[
+A-\lambda I
+\]
+
+will eventually annihilate the relevant vectors.  But the ordinary
+eigenvector \(v_1\) is already annihilated after one application:
+
+\[
+(A-\lambda I)v_1=0.
+\]
+
+Instead of merely accepting this as the end of the story, we may ask
+whether \(v_1\) itself could have come from somewhere.
+
+Could there be another vector \(v_2\) such that
+
+\[
+(A-\lambda I)v_2=v_1?
+\]
+
+If so, \(v_1\) has what we may informally think of as a
+\emph{parent}.  And then another question immediately arises:
+
+\[
+\text{Could }v_2\text{ itself have a parent?}
+\]
+
+Perhaps there exists \(v_3\) such that
+
+\[
+(A-\lambda I)v_3=v_2.
+\]
+
+Continuing this way, what initially appeared to be a single ordinary
+eigenvector may turn out to be the visible end of a much longer
+history:
+
+\[
+\boxed{
+v_k
+\longrightarrow
+v_{k-1}
+\longrightarrow
+\cdots
+\longrightarrow
+v_2
+\longrightarrow
+v_1
+\longrightarrow
+0.
+}
+\]
+
+The ordinary eigenvector \(v_1\) is therefore not necessarily the
+beginning of the story.  It may be the \emph{last surviving member} of
+a sequence of vectors connected through repeated applications of
+\(A-\lambda I\).
+
+There is another useful way to visualize the same idea.  Instead of
+thinking about medicine, consider the inheritance of a fatal genetic disease
+through a family.
+
+For the purpose of this analogy, imagine that being sent to the null
+space---that is, being mapped to zero---corresponds to dying from the
+disease.  A particular genetic condition may be carried through several
+generations without causing that outcome.  A grandparent may carry the
+relevant genetic variant, pass it to a parent, and the parent may in
+turn pass it to a child.  Then, for biological reasons that may involve
+many additional factors, the disease may become severe in the child, and unfortunately they die.
+
+The unexpected event naturally encourages the physicians to look
+backward through the family history.  They may discover that what
+appeared to happen suddenly in the child actually has an ancestry:
+
+\[
+\boxed{
+\text{grandparent}
+\longrightarrow
+\text{parent}
+\longrightarrow
+\text{child}
+\longrightarrow
+\text{death}.
+}
+\]
+
+The child is where the outcome became visible, but the story did not
+necessarily begin with the child.  Tracing backward reveals the
+generations that carried the relevant inherited factor.
+
+We may use the same picture for our vectors.  If reaching zero is
+thought of as reaching the ``death'' of the process, then
+
+\[
+v_1
+\xrightarrow{\,A-\lambda I\,}
+0
+\]
+
+shows us only the final visible step.  We may therefore investigate
+whether \(v_1\) has a parent \(v_2\), whether \(v_2\) has a parent
+\(v_3\), and so on.  Tracing this mathematical family tree backward
+may reveal
+
+\[
+\boxed{
+v_k
+\xrightarrow{\,A-\lambda I\,}
+v_{k-1}
+\xrightarrow{\,A-\lambda I\,}
+\cdots
+\xrightarrow{\,A-\lambda I\,}
+v_2
+\xrightarrow{\,A-\lambda I\,}
+v_1
+\xrightarrow{\,A-\lambda I\,}
+0.
+}
+\]
+
+Of course, this is only an analogy: real genetic inheritance and
+disease expression are considerably more complicated.  Its purpose
+here is simply to emphasize one idea.  When we observe \(v_1\) being
+sent immediately to zero, we can look backward and ask whether there
+is an entire ancestry of vectors behind it.
+
+This sequence is exactly what the mathematics later identifies as a
+Jordan chain.
+
+% =================================================
+\section{A Complete \(3\times3\) Example}
+% =================================================
+
+The theoretical development of the Jordan canonical form can appear
+somewhat convoluted when encountered for the first time.  Fortunately,
+the computational problems themselves are usually much less difficult
+than the theory might suggest.
+
+In a classroom or examination setting, a sensible problem designed to
+test the basic Jordan-form construction will ordinarily involve a small
+matrix.  A \(3\times3\) example is already large enough to reveal the
+essential structure: repeated eigenvalues, a shortage of ordinary
+eigenvectors, generalized eigenvectors, a Jordan chain, the Jordan
+block, and the similarity transformation.
+
+There is therefore little pedagogical value in beginning with an
+unnecessarily large matrix.  Instead, we will solve one carefully
+chosen \(3\times3\) problem completely and step by step.  This example
+will reveal the rest of the story developed in the previous sections.
+
+Consider
+
+\[
+\boxed{
+A=
+\begin{pmatrix}
+9&7&3\\
+-9&-7&-4\\
+4&4&4
+\end{pmatrix}.
+}
+\]
+
+Our goal is to find an invertible matrix \(P\) and a Jordan matrix
+\(J\) such that
+
+\[
+\boxed{
+P^{-1}AP=J.
+}
+\]
+
+We proceed one step at a time.
+
+
+% -------------------------------------------------
+\subsection{Step 1: Find the Characteristic Polynomial}
+% -------------------------------------------------
+
+We begin with
+
+\[
+p_A(x)=\det(xI-A).
+\]
+
+Since
+
+\[
+xI=
+\begin{pmatrix}
+x&0&0\\
+0&x&0\\
+0&0&x
+\end{pmatrix},
+\]
+
+we obtain
+
+\[
+xI-A
+=
+\begin{pmatrix}
+x&0&0\\
+0&x&0\\
+0&0&x
+\end{pmatrix}
+-
+\begin{pmatrix}
+9&7&3\\
+-9&-7&-4\\
+4&4&4
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+xI-A
+=
+\begin{pmatrix}
+x-9&-7&-3\\
+9&x+7&4\\
+-4&-4&x-4
+\end{pmatrix}.
+\]
+
+Hence
+
+\[
+p_A(x)
+=
+\det
+\begin{pmatrix}
+x-9&-7&-3\\
+9&x+7&4\\
+-4&-4&x-4
+\end{pmatrix}.
+\]
+
+Expanding along the first row,
+
+\[
+\begin{aligned}
+p_A(x)
+&=
+(x-9)
+\begin{vmatrix}
+x+7&4\\
+-4&x-4
+\end{vmatrix}
+-
+(-7)
+\begin{vmatrix}
+9&4\\
+-4&x-4
+\end{vmatrix} \\
+&\qquad
++
+(-3)
+\begin{vmatrix}
+9&x+7\\
+-4&-4
+\end{vmatrix}.
+\end{aligned}
+\]
+
+Now compute each \(2\times2\) determinant separately.
+
+First,
+
+\[
+\begin{aligned}
+\begin{vmatrix}
+x+7&4\\
+-4&x-4
+\end{vmatrix}
+&=
+(x+7)(x-4)-4(-4)\\
+&=
+(x+7)(x-4)+16\\
+&=
+x^2+3x-28+16\\
+&=
+x^2+3x-12.
+\end{aligned}
+\]
+
+Second,
+
+\[
+\begin{aligned}
+\begin{vmatrix}
+9&4\\
+-4&x-4
+\end{vmatrix}
+&=
+9(x-4)-4(-4)\\
+&=
+9x-36+16\\
+&=
+9x-20.
+\end{aligned}
+\]
+
+Third,
+
+\[
+\begin{aligned}
+\begin{vmatrix}
+9&x+7\\
+-4&-4
+\end{vmatrix}
+&=
+9(-4)-(x+7)(-4)\\
+&=
+-36+4(x+7)\\
+&=
+-36+4x+28\\
+&=
+4x-8.
+\end{aligned}
+\]
+
+Substituting these results,
+
+\[
+\begin{aligned}
+p_A(x)
+&=
+(x-9)(x^2+3x-12)
++
+7(9x-20)
+-
+3(4x-8).
+\end{aligned}
+\]
+
+Expand the first product:
+
+\[
+\begin{aligned}
+(x-9)(x^2+3x-12)
+&=
+x(x^2+3x-12)
+-
+9(x^2+3x-12)\\
+&=
+x^3+3x^2-12x
+-
+9x^2-27x+108\\
+&=
+x^3-6x^2-39x+108.
+\end{aligned}
+\]
+
+Also,
+
+\[
+7(9x-20)=63x-140,
+\]
+
+and
+
+\[
+-3(4x-8)=-12x+24.
+\]
+
+Therefore,
+
+\[
+\begin{aligned}
+p_A(x)
+&=
+x^3-6x^2-39x+108
++63x-140
+-12x+24\\
+&=
+x^3-6x^2+12x-8.
+\end{aligned}
+\]
+
+But
+
+\[
+x^3-6x^2+12x-8=(x-2)^3.
+\]
+
+Hence
+
+\[
+\boxed{
+p_A(x)=(x-2)^3.
+}
+\]
+
+Therefore the matrix has only one eigenvalue,
+
+\[
+\boxed{
+\lambda=2,
+}
+\]
+
+with algebraic multiplicity
+
+\[
+\boxed{
+3.
+}
+\]
+
+Throughout this calculation, we have used \(x\) rather than
+\(\lambda\) as the variable in the characteristic polynomial simply
+for easier typesetting and readability.  There is no mathematical
+difference between the two choices.
+
+In this context, \(x\) and \(\lambda\) are only dummy variables used
+to represent the argument of the polynomial.  Thus
+
+\[
+p_A(x)=(x-2)^3
+\]
+
+and
+
+\[
+p_A(\lambda)=(\lambda-2)^3
+\]
+
+express exactly the same characteristic polynomial.  The reader should
+therefore not attach any special significance to the choice of symbol.
+
+
+% -------------------------------------------------
+\subsection{Step 2: Find the Ordinary Eigenvectors}
+% -------------------------------------------------
+
+We now solve
+
+\[
+(A-2I)v=0.
+\]
+
+First compute
+
+\[
+A-2I
+=
+\begin{pmatrix}
+9&7&3\\
+-9&-7&-4\\
+4&4&4
+\end{pmatrix}
+-
+\begin{pmatrix}
+2&0&0\\
+0&2&0\\
+0&0&2
+\end{pmatrix}.
+\]
+
+Thus
+
+\[
+\boxed{
+N=A-2I
+=
+\begin{pmatrix}
+7&7&3\\
+-9&-9&-4\\
+4&4&2
+\end{pmatrix}.
+}
+\]
+
+Let
+
+\[
+v=
+\begin{pmatrix}
+x\\
+y\\
+z
+\end{pmatrix}.
+\]
+
+Then
+
+\[
+Nv=0
+\]
+
+becomes
+
+\[
+\begin{pmatrix}
+7&7&3\\
+-9&-9&-4\\
+4&4&2
+\end{pmatrix}
+\begin{pmatrix}
+x\\
+y\\
+z
+\end{pmatrix}
+=
+\begin{pmatrix}
+0\\
+0\\
+0
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+\begin{aligned}
+7x+7y+3z&=0,\\
+-9x-9y-4z&=0,\\
+4x+4y+2z&=0.
+\end{aligned}
+\]
+
+Since \(x\) and \(y\) always appear as \(x+y\), let
+
+\[
+s=x+y.
+\]
+
+The system becomes
+
+\[
+\begin{aligned}
+7s+3z&=0,\\
+-9s-4z&=0,\\
+4s+2z&=0.
+\end{aligned}
+\]
+
+From the third equation,
+
+\[
+4s+2z=0.
+\]
+
+Hence
+
+\[
+2s+z=0,
+\]
+
+so
+
+\[
+z=-2s.
+\]
+
+Substitute this into the first equation:
+
+\[
+7s+3(-2s)=0.
+\]
+
+Thus
+
+\[
+7s-6s=0,
+\]
+
+and therefore
+
+\[
+s=0.
+\]
+
+Hence
+
+\[
+z=0.
+\]
+
+Since
+
+\[
+s=x+y=0,
+\]
+
+we have
+
+\[
+y=-x.
+\]
+
+Therefore every eigenvector has the form
+
+\[
+v=
+x
+\begin{pmatrix}
+1\\
+-1\\
+0
+\end{pmatrix}.
+\]
+
+We choose
+
+\[
+\boxed{
+v_1=
+\begin{pmatrix}
+1\\
+-1\\
+0
+\end{pmatrix}.
+}
+\]
+
+Thus
+
+\[
+\boxed{
+E_2
+=
+\ker(A-2I)
+=
+\operatorname{span}
+\left\{
+\begin{pmatrix}
+1\\
+-1\\
+0
+\end{pmatrix}
+\right\}.
+}
+\]
+
+Therefore,
+
+\[
+\dim E_2=1.
+\]
+
+The algebraic multiplicity is \(3\), but the geometric multiplicity is
+only \(1\):
+
+\[
+\boxed{
+1<3.
+}
+\]
+
+Hence \(A\) is defective and cannot be diagonalized.
+
+This is exactly the situation for which the Jordan construction is
+needed.
+
+
+% -------------------------------------------------
+\subsection{Step 3: Search for the Parent of \(v_1\)}
+% -------------------------------------------------
+
+We have
+
+\[
+Nv_1=0.
+\]
+
+Following the intuition developed earlier, we now ask whether \(v_1\)
+has a ``parent.''
+
+That is, can we find a vector \(v_2\) satisfying
+
+\[
+\boxed{
+Nv_2=v_1?
+}
+\]
+
+Let
+
+\[
+v_2=
+\begin{pmatrix}
+a\\
+b\\
+c
+\end{pmatrix}.
+\]
+
+Then
+
+\[
+\begin{pmatrix}
+7&7&3\\
+-9&-9&-4\\
+4&4&2
+\end{pmatrix}
+\begin{pmatrix}
+a\\
+b\\
+c
+\end{pmatrix}
+=
+\begin{pmatrix}
+1\\
+-1\\
+0
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+\begin{aligned}
+7a+7b+3c&=1,\\
+-9a-9b-4c&=-1,\\
+4a+4b+2c&=0.
+\end{aligned}
+\]
+
+Again let
+
+\[
+s=a+b.
+\]
+
+Then
+
+\[
+\begin{aligned}
+7s+3c&=1,\\
+-9s-4c&=-1,\\
+4s+2c&=0.
+\end{aligned}
+\]
+
+From the third equation,
+
+\[
+4s+2c=0.
+\]
+
+Therefore,
+
+\[
+c=-2s.
+\]
+
+Substitute into the first equation:
+
+\[
+7s+3(-2s)=1.
+\]
+
+Hence
+
+\[
+7s-6s=1,
+\]
+
+so
+
+\[
+s=1.
+\]
+
+Therefore,
+
+\[
+c=-2.
+\]
+
+Since
+
+\[
+a+b=1,
+\]
+
+we are free to choose any convenient pair satisfying this relation.
+
+Choose
+
+\[
+a=1,
+\qquad
+b=0.
+\]
+
+Then
+
+\[
+\boxed{
+v_2=
+\begin{pmatrix}
+1\\
+0\\
+-2
+\end{pmatrix}.
+}
+\]
+
+Let us immediately verify this choice:
+
+\[
+Nv_2
+=
+\begin{pmatrix}
+7&7&3\\
+-9&-9&-4\\
+4&4&2
+\end{pmatrix}
+\begin{pmatrix}
+1\\
+0\\
+-2
+\end{pmatrix}.
+\]
+
+Carrying out the multiplication,
+
+\[
+Nv_2
+=
+\begin{pmatrix}
+7(1)+7(0)+3(-2)\\
+-9(1)-9(0)-4(-2)\\
+4(1)+4(0)+2(-2)
+\end{pmatrix}.
+\]
+
+Thus
+
+\[
+Nv_2
+=
+\begin{pmatrix}
+7-6\\
+-9+8\\
+4-4
+\end{pmatrix}
+=
+\begin{pmatrix}
+1\\
+-1\\
+0
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+Nv_2=v_1.
+}
+\]
+
+
+% -------------------------------------------------
+\subsection{Step 4: Search for the Parent of \(v_2\)}
+% -------------------------------------------------
+
+We still need a third independent vector.
+
+Following exactly the same idea, we now ask whether \(v_2\) itself has
+a parent.
+
+We seek \(v_3\) satisfying
+
+\[
+\boxed{
+Nv_3=v_2.
+}
+\]
+
+Let
+
+\[
+v_3=
+\begin{pmatrix}
+a\\
+b\\
+c
+\end{pmatrix}.
+\]
+
+Then
+
+\[
+\begin{pmatrix}
+7&7&3\\
+-9&-9&-4\\
+4&4&2
+\end{pmatrix}
+\begin{pmatrix}
+a\\
+b\\
+c
+\end{pmatrix}
+=
+\begin{pmatrix}
+1\\
+0\\
+-2
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+\begin{aligned}
+7a+7b+3c&=1,\\
+-9a-9b-4c&=0,\\
+4a+4b+2c&=-2.
+\end{aligned}
+\]
+
+Again define
+
+\[
+s=a+b.
+\]
+
+Then
+
+\[
+\begin{aligned}
+7s+3c&=1,\\
+-9s-4c&=0,\\
+4s+2c&=-2.
+\end{aligned}
+\]
+
+From the second equation,
+
+\[
+-9s-4c=0.
+\]
+
+Therefore,
+
+\[
+4c=-9s,
+\]
+
+so
+
+\[
+c=-\frac{9}{4}s.
+\]
+
+Now substitute this into the third equation:
+
+\[
+4s+2\left(-\frac94s\right)=-2.
+\]
+
+Thus
+
+\[
+4s-\frac92s=-2.
+\]
+
+Writing \(4s\) as \(\frac82s\),
+
+\[
+\frac82s-\frac92s=-2.
+\]
+
+Therefore,
+
+\[
+-\frac12s=-2.
+\]
+
+Multiplying both sides by \(-2\),
+
+\[
+s=4.
+\]
+
+Hence
+
+\[
+c=-\frac94(4),
+\]
+
+so
+
+\[
+c=-9.
+\]
+
+Since
+
+\[
+a+b=4,
+\]
+
+choose
+
+\[
+a=4,
+\qquad
+b=0.
+\]
+
+Therefore,
+
+\[
+\boxed{
+v_3=
+\begin{pmatrix}
+4\\
+0\\
+-9
+\end{pmatrix}.
+}
+\]
+
+Again we verify directly:
+
+\[
+Nv_3
+=
+\begin{pmatrix}
+7&7&3\\
+-9&-9&-4\\
+4&4&2
+\end{pmatrix}
+\begin{pmatrix}
+4\\
+0\\
+-9
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+Nv_3
+=
+\begin{pmatrix}
+7(4)+7(0)+3(-9)\\
+-9(4)-9(0)-4(-9)\\
+4(4)+4(0)+2(-9)
+\end{pmatrix}.
+\]
+
+Hence
+
+\[
+Nv_3
+=
+\begin{pmatrix}
+28-27\\
+-36+36\\
+16-18
+\end{pmatrix}
+=
+\begin{pmatrix}
+1\\
+0\\
+-2
+\end{pmatrix}.
+\]
+
+Thus
+
+\[
+\boxed{
+Nv_3=v_2.
+}
+\]
+
+
+% -------------------------------------------------
+\subsection{Step 5: We Have Found the Jordan Chain}
+% -------------------------------------------------
+
+We have now obtained
+
+\[
+v_1=
+\begin{pmatrix}
+1\\
+-1\\
+0
+\end{pmatrix},
+\qquad
+v_2=
+\begin{pmatrix}
+1\\
+0\\
+-2
+\end{pmatrix},
+\qquad
+v_3=
+\begin{pmatrix}
+4\\
+0\\
+-9
+\end{pmatrix}.
+\]
+
+They satisfy
+
+\[
+Nv_1=0,
+\]
+
+\[
+Nv_2=v_1,
+\]
+
+and
+
+\[
+Nv_3=v_2.
+\]
+
+Since
+
+\[
+N=A-2I,
+\]
+
+the chain is
+
+\[
+\boxed{
+v_3
+\xrightarrow{\,A-2I\,}
+v_2
+\xrightarrow{\,A-2I\,}
+v_1
+\xrightarrow{\,A-2I\,}
+0.
+}
+\]
+
+This is a Jordan chain of length \(3\).
+
+
+% -------------------------------------------------
+\subsection{Step 6: Recover the Action of \(A\)}
+% -------------------------------------------------
+
+From
+
+\[
+(A-2I)v_1=0,
+\]
+
+we have
+
+\[
+Av_1-2Iv_1=0.
+\]
+
+Since
+
+\[
+Iv_1=v_1,
+\]
+
+we obtain
+
+\[
+Av_1-2v_1=0,
+\]
+
+and hence
+
+\[
+\boxed{
+Av_1=2v_1.
+}
+\]
+
+Next,
+
+\[
+(A-2I)v_2=v_1.
+\]
+
+Therefore,
+
+\[
+Av_2-2Iv_2=v_1.
+\]
+
+Since
+
+\[
+Iv_2=v_2,
+\]
+
+we obtain
+
+\[
+Av_2-2v_2=v_1.
+\]
+
+Hence
+
+\[
+\boxed{
+Av_2=2v_2+v_1.
+}
+\]
+
+Finally,
+
+\[
+(A-2I)v_3=v_2.
+\]
+
+Therefore,
+
+\[
+Av_3-2Iv_3=v_2.
+\]
+
+Since
+
+\[
+Iv_3=v_3,
+\]
+
+we obtain
+
+\[
+Av_3-2v_3=v_2.
+\]
+
+Thus
+
+\[
+\boxed{
+Av_3=2v_3+v_2.
+}
+\]
+
+Altogether,
+
+\[
+\boxed{
+\begin{aligned}
+Av_1&=2v_1,\\
+Av_2&=v_1+2v_2,\\
+Av_3&=v_2+2v_3.
+\end{aligned}
+}
+\]
+
+
+% -------------------------------------------------
+\subsection{Step 7: Construct the Jordan Matrix}
+% -------------------------------------------------
+
+The preceding relations immediately tell us what the matrix of \(A\)
+must look like in the ordered basis
+
+\[
+\mathcal B=(v_1,v_2,v_3).
+\]
+
+From
+
+\[
+Av_1=2v_1,
+\]
+
+the first coordinate column is
+
+\[
+\begin{pmatrix}
+2\\
+0\\
+0
+\end{pmatrix}.
+\]
+
+From
+
+\[
+Av_2=v_1+2v_2,
+\]
+
+the second coordinate column is
+
+\[
+\begin{pmatrix}
+1\\
+2\\
+0
+\end{pmatrix}.
+\]
+
+From
+
+\[
+Av_3=v_2+2v_3,
+\]
+
+the third coordinate column is
+
+\[
+\begin{pmatrix}
+0\\
+1\\
+2
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+\boxed{
+J=
+\begin{pmatrix}
+2&1&0\\
+0&2&1\\
+0&0&2
+\end{pmatrix}.
+}
+\]
+
+
+% -------------------------------------------------
+\subsection{Step 8: Construct the Matrix \(P\)}
+% -------------------------------------------------
+
+The columns of \(P\) are the vectors of the Jordan chain in the order
+
+\[
+v_1,\;v_2,\;v_3.
+\]
+
+Therefore,
+
+\[
+P=
+\begin{pmatrix}
+\vert&\vert&\vert\\
+v_1&v_2&v_3\\
+\vert&\vert&\vert
+\end{pmatrix}.
+\]
+
+Substituting the vectors,
+
+\[
+\boxed{
+P=
+\begin{pmatrix}
+1&1&4\\
+-1&0&0\\
+0&-2&-9
+\end{pmatrix}.
+}
+\]
+
+Before using \(P^{-1}\), we verify that \(P\) is invertible.
+
+Compute
+
+\[
+\det P
+=
+\det
+\begin{pmatrix}
+1&1&4\\
+-1&0&0\\
+0&-2&-9
+\end{pmatrix}.
+\]
+
+Expanding along the second row is convenient:
+
+\[
+\det P
+=
+(-1)(-1)^{2+1}
+\begin{vmatrix}
+1&4\\
+-2&-9
+\end{vmatrix}.
+\]
+
+Thus
+
+\[
+\det P
+=
+\begin{vmatrix}
+1&4\\
+-2&-9
+\end{vmatrix}.
+\]
+
+Therefore,
+
+\[
+\det P
+=
+1(-9)-4(-2).
+\]
+
+Hence
+
+\[
+\det P=-9+8=-1.
+\]
+
+Thus
+
+\[
+\boxed{
+\det P=-1\neq0.
+}
+\]
+
+Therefore \(P\) is invertible.
+
+
+% -------------------------------------------------
+\subsection{Step 9: Verify \(AP=PJ\)}
+% -------------------------------------------------
+
+Before computing \(P^{-1}AP\), it is useful to verify the equivalent
+relation
+
+\[
+AP=PJ.
+\]
+
+First compute \(AP\):
+
+\[
+AP
+=
+\begin{pmatrix}
+9&7&3\\
+-9&-7&-4\\
+4&4&4
+\end{pmatrix}
+\begin{pmatrix}
+1&1&4\\
+-1&0&0\\
+0&-2&-9
+\end{pmatrix}.
+\]
+
+Compute the entries row by row.
+
+For the first row,
+
+\[
+\begin{aligned}
+(1,1)&:\quad 9(1)+7(-1)+3(0)=2,\\
+(1,2)&:\quad 9(1)+7(0)+3(-2)=3,\\
+(1,3)&:\quad 9(4)+7(0)+3(-9)=9.
+\end{aligned}
+\]
+
+For the second row,
+
+\[
+\begin{aligned}
+(2,1)&:\quad -9(1)-7(-1)-4(0)=-2,\\
+(2,2)&:\quad -9(1)-7(0)-4(-2)=-1,\\
+(2,3)&:\quad -9(4)-7(0)-4(-9)=0.
+\end{aligned}
+\]
+
+For the third row,
+
+\[
+\begin{aligned}
+(3,1)&:\quad 4(1)+4(-1)+4(0)=0,\\
+(3,2)&:\quad 4(1)+4(0)+4(-2)=-4,\\
+(3,3)&:\quad 4(4)+4(0)+4(-9)=-20.
+\end{aligned}
+\]
+
+Therefore,
+
+\[
+\boxed{
+AP=
+\begin{pmatrix}
+2&3&9\\
+-2&-1&0\\
+0&-4&-20
+\end{pmatrix}.
+}
+\]
+
+Now compute \(PJ\):
+
+\[
+PJ
+=
+\begin{pmatrix}
+1&1&4\\
+-1&0&0\\
+0&-2&-9
+\end{pmatrix}
+\begin{pmatrix}
+2&1&0\\
+0&2&1\\
+0&0&2
+\end{pmatrix}.
+\]
+
+Again compute every entry.
+
+For the first row,
+
+\[
+\begin{aligned}
+(1,1)&:\quad 1(2)+1(0)+4(0)=2,\\
+(1,2)&:\quad 1(1)+1(2)+4(0)=3,\\
+(1,3)&:\quad 1(0)+1(1)+4(2)=9.
+\end{aligned}
+\]
+
+For the second row,
+
+\[
+\begin{aligned}
+(2,1)&:\quad (-1)(2)+0(0)+0(0)=-2,\\
+(2,2)&:\quad (-1)(1)+0(2)+0(0)=-1,\\
+(2,3)&:\quad (-1)(0)+0(1)+0(2)=0.
+\end{aligned}
+\]
+
+For the third row,
+
+\[
+\begin{aligned}
+(3,1)&:\quad 0(2)+(-2)(0)+(-9)(0)=0,\\
+(3,2)&:\quad 0(1)+(-2)(2)+(-9)(0)=-4,\\
+(3,3)&:\quad 0(0)+(-2)(1)+(-9)(2)=-20.
+\end{aligned}
+\]
+
+Therefore,
+
+\[
+\boxed{
+PJ=
+\begin{pmatrix}
+2&3&9\\
+-2&-1&0\\
+0&-4&-20
+\end{pmatrix}.
+}
+\]
+
+Hence
+
+\[
+\boxed{
+AP=PJ.
+}
+\]
+
+This already verifies that the Jordan-chain construction is correct.
+
+
+% -------------------------------------------------
+\subsection{Step 10: Verify \(P^{-1}AP=J\)}
+% -------------------------------------------------
+
+For completeness, we now verify the similarity transformation directly.
+
+For this matrix,
+
+\[
+P^{-1}
+=
+\begin{pmatrix}
+0&-1&0\\
+9&9&4\\
+-2&-2&-1
+\end{pmatrix}.
+\]
+
+We already found
+
+\[
+AP=
+\begin{pmatrix}
+2&3&9\\
+-2&-1&0\\
+0&-4&-20
+\end{pmatrix}.
+\]
+
+Therefore,
+
+\[
+P^{-1}AP
+=
+\begin{pmatrix}
+0&-1&0\\
+9&9&4\\
+-2&-2&-1
+\end{pmatrix}
+\begin{pmatrix}
+2&3&9\\
+-2&-1&0\\
+0&-4&-20
+\end{pmatrix}.
+\]
+
+Compute the first row:
+
+\[
+\begin{aligned}
+(1,1)&:\quad 0(2)+(-1)(-2)+0(0)=2,\\
+(1,2)&:\quad 0(3)+(-1)(-1)+0(-4)=1,\\
+(1,3)&:\quad 0(9)+(-1)(0)+0(-20)=0.
+\end{aligned}
+\]
+
+Compute the second row:
+
+\[
+\begin{aligned}
+(2,1)&:\quad 9(2)+9(-2)+4(0)=0,\\
+(2,2)&:\quad 9(3)+9(-1)+4(-4)=2,\\
+(2,3)&:\quad 9(9)+9(0)+4(-20)=1.
+\end{aligned}
+\]
+
+Compute the third row:
+
+\[
+\begin{aligned}
+(3,1)&:\quad (-2)(2)+(-2)(-2)+(-1)(0)=0,\\
+(3,2)&:\quad (-2)(3)+(-2)(-1)+(-1)(-4)=0,\\
+(3,3)&:\quad (-2)(9)+(-2)(0)+(-1)(-20)=2.
+\end{aligned}
+\]
+
+Therefore,
+
+\[
+P^{-1}AP
+=
+\begin{pmatrix}
+2&1&0\\
+0&2&1\\
+0&0&2
+\end{pmatrix}.
+\]
+
+Hence,
+
+\[
+\boxed{
+P^{-1}AP
+=
+J
+=
+\begin{pmatrix}
+2&1&0\\
+0&2&1\\
+0&0&2
+\end{pmatrix}.
+}
+\]
+
+
+% -------------------------------------------------
+\subsection{What This Example Reveals}
+% -------------------------------------------------
+
+This single \(3\times3\) problem contains nearly the entire basic story
+of the Jordan canonical form.
+
+The characteristic polynomial told us that the eigenvalue \(2\)
+appears three times:
+
+\[
+p_A(x)=(x-2)^3.
+\]
+
+However, the ordinary eigenspace supplied only one independent
+eigenvector:
+
+\[
+v_1.
+\]
+
+Ordinary diagonalization therefore failed.
+
+Rather than abandoning the problem, we traced backward:
+
+\[
+Nv_2=v_1,
+\]
+
+and then
+
+\[
+Nv_3=v_2.
+\]
+
+Thus the missing directions were recovered through the Jordan chain
+
+\[
+\boxed{
+v_3
+\longrightarrow
+v_2
+\longrightarrow
+v_1
+\longrightarrow
+0.
+}
+\]
+
+In the language of our earlier intuition, \(v_1\) was only the final
+visible member of a larger mathematical family.  Searching for its
+parent and grandparent recovered the vectors that ordinary
+diagonalization could not provide.
+
+Those vectors then formed the basis
+
+\[
+P=[\,v_1\;v_2\;v_3\,],
+\]
+
+and in that basis the complicated matrix
+
+\[
+A=
+\begin{pmatrix}
+9&7&3\\
+-9&-7&-4\\
+4&4&4
+\end{pmatrix}
+\]
+
+became the remarkably simple matrix
+
+\[
+\boxed{
+J=
+\begin{pmatrix}
+2&1&0\\
+0&2&1\\
+0&0&2
+\end{pmatrix}.
+}
+\]
+
+The diagonal entries preserve the eigenvalue \(2\), while the
+superdiagonal \(1\)'s preserve the connections between successive
+members of the Jordan chain.
+
+Thus Jordan canonical form does not somehow manufacture the missing
+eigenvectors.  Instead, it replaces the unavailable ordinary
+eigendirections with generalized eigenvectors that retain the
+remaining algebraic structure of the transformation.
+
+% =================================================
+% =================================================
+\section{Computing the Jordan Canonical Form in MATLAB}
+% =================================================
+
+After working through the Jordan construction by hand, it is useful to
+see how the same computation can be performed in MATLAB.
+
+MATLAB provides the function
+
+\begin{verbatim}
+J = jordan(A)
+\end{verbatim}
+
+for computing the Jordan canonical form.  If we also want the
+transformation matrix, we use
+
+\begin{verbatim}
+[P,J] = jordan(A)
+\end{verbatim}
+
+where the output satisfies
+
+\[
+\boxed{
+P^{-1}AP=J.
+}
+\]
+
+The columns of \(P\) form the corresponding Jordan basis, consisting
+of eigenvectors and, when necessary, generalized eigenvectors.
+
+
+% -------------------------------------------------
+\subsection{Our \(3\times3\) Example in MATLAB}
+% -------------------------------------------------
+
+Consider again
+
+\[
+A=
+\begin{pmatrix}
+9&7&3\\
+-9&-7&-4\\
+4&4&4
+\end{pmatrix}.
+\]
+
+The basic MATLAB calculation is remarkably short:
+
+\begin{verbatim}
+clear; clc;
+
+A = [ 9  7  3;
+     -9 -7 -4;
+      4  4  4];
+
+[P,J] = jordan(A);
+
+disp('Transformation matrix P:')
+disp(P)
+
+disp('Jordan canonical form J:')
+disp(J)
+\end{verbatim}
+
+For this problem, the Jordan matrix has the structure
+
+\[
+\boxed{
+J=
+\begin{pmatrix}
+2&1&0\\
+0&2&1\\
+0&0&2
+\end{pmatrix}.
+}
+\]
+
+The matrix \(P\) returned by MATLAB need not contain exactly the same
+generalized eigenvectors that we constructed by hand.  Generalized
+eigenvectors are not unique.  What matters is that the returned
+matrices satisfy
+
+\[
+\boxed{
+P^{-1}AP=J.
+}
+\]
+
+A convenient verification is obtained from the equivalent relation
+
+\[
+AP=PJ.
+\]
+
+Thus we may check
+
+\begin{verbatim}
+A*P - P*J
+\end{verbatim}
+
+and verify that the result is the zero matrix.
+
+We may also directly examine
+
+\begin{verbatim}
+inv(P)*A*P
+\end{verbatim}
+
+and compare the result with \(J\).
+
+For learning purposes, this is essentially all that is required:
+construct \(A\), call \texttt{jordan}, examine \(P\) and \(J\), and
+verify the decomposition.
+
+
+% -------------------------------------------------
+% -------------------------------------------------
+% -------------------------------------------------
+\subsection{Numerical Consideration}
+% -------------------------------------------------
+
+The preceding discussion concerns the exact algebraic structure of a
+matrix.  In a textbook problem, the entries of \(A\) are assumed to be
+known exactly, and questions such as algebraic multiplicity, geometric
+multiplicity, and Jordan structure are therefore perfectly well
+defined.
+
+Matrices arising in scientific computation, however, are often less
+idealized.  They may come from experimental measurements, parameter
+estimation, numerical simulation, discretization of a differential
+equation or partial differential equation, or previous floating-point calculations.  Consequently, the
+matrix actually stored in a computer may differ slightly from the ideal
+mathematical matrix.
+
+A convenient way to represent this is
+
+\[
+\boxed{
+A_{\varepsilon}=A+\varepsilon E,
+}
+\]
+
+where \(\varepsilon\) is small and \(E\) describes the direction of the
+perturbation.
+
+The term
+
+\[
+\varepsilon E
+\]
+
+may be interpreted as a small amount of unavoidable impurity introduced
+by measurement, modeling, discretization, or finite-precision
+computation.
+
+
+% -------------------------------------------------
+\subsubsection*{Why This Matters for Jordan Form}
+% -------------------------------------------------
+
+Jordan structure is extremely sensitive to perturbations.
+
+Suppose the exact matrix \(A\) has a repeated eigenvalue
+
+\[
+2,\;2,\;2
+\]
+
+and contains a nontrivial Jordan block.
+
+A nearby matrix
+
+\[
+A_{\varepsilon}=A+\varepsilon E
+\]
+
+may instead have three slightly different eigenvalues:
+
+\[
+\boxed{
+2,\;2,\;2
+\quad
+\longrightarrow
+\quad
+2+\delta_1,\;
+2+\delta_2,\;
+2+\delta_3,
+}
+\]
+
+where the quantities \(\delta_1,\delta_2,\delta_3\) are small but
+generally unequal.
+
+If the perturbed eigenvalues become distinct, the nearby matrix becomes
+diagonalizable.
+
+Thus a matrix that is exactly defective in theory may appear
+nondefective when represented by real data or floating-point numbers.
+
+This is not a contradiction.  The two matrices are simply not
+algebraically identical.
+
+
+% -------------------------------------------------
+\subsubsection*{Impurity in Real Data}
+% -------------------------------------------------
+
+Small perturbations may arise naturally from
+
+\begin{itemize}
+    \item measurement uncertainty,
+    \item sensor noise,
+    \item parameter estimation,
+    \item floating-point representation,
+    \item rounding error,
+    \item discretization error,
+    \item or previous numerical computation.
+\end{itemize}
+
+Therefore, even if the ideal mathematical model contains an exact
+Jordan block, the matrix available in a computer may instead be a
+nearby matrix having a complete set of ordinary eigenvectors.
+
+In some numerical calculations, this may make the nearby problem easier
+to manipulate.
+
+The important distinction is
+
+\[
+\boxed{
+\text{numerically easier}
+\neq
+\text{algebraically identical}.
+}
+\]
+
+The nearby matrix may be simpler computationally while no longer
+possessing the exact Jordan structure of the original matrix.
+
+
+% -------------------------------------------------
+\subsection{A Simple MATLAB Experiment}
+% -------------------------------------------------
+
+This sensitivity can be demonstrated directly in MATLAB.
+
+Consider again
+
+\begin{verbatim}
+clear; clc;
+
+A = [ 9  7  3;
+     -9 -7 -4;
+      4  4  4];
+\end{verbatim}
+
+The exact matrix has the repeated eigenvalue \(2\).
+
+Now suppose a small perturbation is already present:
+
+\begin{verbatim}
+rng(1);
+
+epsilon = 1e-8;
+E = randn(size(A));
+
+Apert = A + epsilon*E;
+
+disp('Eigenvalues of the original matrix:')
+disp(eig(A))
+
+disp('Eigenvalues of the perturbed matrix:')
+disp(eig(Apert))
+\end{verbatim}
+
+The eigenvalues of the perturbed matrix will generally no longer be
+exactly identical.
+
+Even though
+
+\[
+\|A_{\varepsilon}-A\|
+\]
+
+is small, the algebraic classification of the matrix may change.
+
+This illustrates one of the central numerical difficulties associated
+with Jordan form:
+
+\[
+\boxed{
+\text{small changes in the matrix can produce large changes in its
+Jordan structure}.
+}
+\]
+
+
+% -------------------------------------------------
+\subsection{Exact Algebra Versus Floating-Point Computation}
+% -------------------------------------------------
+
+The Jordan canonical form therefore provides an excellent example of
+the distinction between exact linear algebra and numerical linear
+algebra.
+
+In exact mathematics, one asks
+
+\[
+\boxed{
+\text{What is the Jordan structure of }A?
+}
+\]
+
+In numerical computation, one must also ask
+
+\[
+\boxed{
+\text{How reliably can that structure be detected from the available
+data?}
+}
+\]
+
+A nontrivial Jordan block represents an exact algebraic relationship.
+Because such relationships can be destroyed by very small perturbations,
+they are difficult to identify reliably from approximate floating-point
+data.
+
+This is one reason that Jordan canonical form is extremely important
+theoretically but is used with caution in numerical computation.
+
+
+% -------------------------------------------------
+\subsection{A Changing Computational Landscape}
+% -------------------------------------------------
+
+There is, however, an important broader perspective.
+
+For several decades, mainstream scientific computing was dominated by
+floating-point numerical methods, while exact symbolic manipulation
+played a more specialized role.
+
+In recent years, symbolic computation has gained renewed momentum.
+Modern computer algebra systems, faster hardware, automatic algebraic
+manipulation, exact arithmetic, and hybrid symbolic--numerical methods
+have made exact computation practical in a much wider range of
+problems.
+
+This development is particularly relevant to questions such as Jordan
+form, because the major difficulty often arises not from the algebra
+itself, but from representing exact algebraic structure using
+approximate numbers.
+
+As symbolic and symbolic--numerical methods continue to improve, some
+of the computational difficulties currently associated with detecting
+exact Jordan structure may become less severe.
+
+It is therefore reasonable to expect that future computational tools
+may handle certain defective-matrix problems more naturally than
+present floating-point methods do.
+
+For now, however, the essential lesson is
+
+\[
+\boxed{
+\begin{array}{c}
+\text{exact algebra reveals the Jordan structure,}\\[1mm]
+\text{floating-point perturbations may obscure or destroy it,}\\[1mm]
+\text{and symbolic computation offers a possible bridge between the two.}
+\end{array}
+}
+\]
+
+The Jordan canonical form is therefore not only a classical theoretical
+construction.  It is also a useful example of how the meaning of a
+mathematical object can depend strongly on the computational framework
+used to represent it.
+
+% =================================================
+\begin{comment}
+\section{Conclusion}
+% =================================================
+
+We began this note with one of the most familiar ideas in linear
+algebra: diagonalization.  When a matrix possesses enough linearly
+independent eigenvectors, the situation is remarkably clean.  We form
+a basis from those eigenvectors and obtain
+
+\[
+P^{-1}AP=D,
+\]
+
+where \(D\) is diagonal.
+
+The difficulty appears when the eigenvectors run out.
+
+A repeated eigenvalue may have algebraic multiplicity larger than the
+dimension of its eigenspace, leaving us without enough ordinary
+eigenvectors to construct a basis.  At first sight, this appears to be
+the end of the diagonalization procedure.
+
+But mathematics rarely progresses by simply declaring defeat when the
+most obvious method stops working.
+
+Instead, they changed the question.
+
+Rather than asking only
+
+\[
+\boxed{
+\text{Where does a vector go under }A-\lambda I?
+}
+\]
+
+we also began asking
+
+\[
+\boxed{
+\text{Where could this vector have come from?}
+}
+\]
+
+That small change in perspective opened the door to the entire Jordan
+construction.
+
+Starting from an ordinary eigenvector
+
+\[
+(A-\lambda I)v_1=0,
+\]
+
+we searched backward for a vector \(v_2\) satisfying
+
+\[
+(A-\lambda I)v_2=v_1.
+\]
+
+Then we asked whether \(v_2\) itself had a predecessor:
+
+\[
+(A-\lambda I)v_3=v_2.
+\]
+
+Continuing in this manner produced the chain
+
+\[
+\boxed{
+v_k
+\longrightarrow
+v_{k-1}
+\longrightarrow
+\cdots
+\longrightarrow
+v_2
+\longrightarrow
+v_1
+\longrightarrow
+0.
+}
+\]
+
+What initially appeared to be a shortage of eigenvectors was therefore
+not the absence of structure.  The structure was simply deeper than
+ordinary eigenvectors alone could reveal.
+
+This is one of the broader lessons of the Jordan canonical form.
+
+
+% -------------------------------------------------
+\subsection*{When the Forward Search Fails, Look Backward}
+% -------------------------------------------------
+
+Much of elementary mathematics trains us to think forward:
+
+\[
+\text{given something}
+\quad\longrightarrow\quad
+\text{compute what comes next}.
+\]
+
+That is an enormously useful habit, but it is not the only way
+mathematicians think.
+
+When a forward search becomes blocked, it can be fruitful to reverse
+the direction of the question.
+
+Instead of asking only
+
+\[
+\text{What does this object produce?}
+\]
+
+one may ask
+
+\[
+\text{What could have produced this object?}
+\]
+
+The Jordan chain is a particularly elegant example of this principle.
+
+The ordinary eigenvector \(v_1\) appears to be the end of the story
+because
+
+\[
+(A-\lambda I)v_1=0.
+\]
+
+But by searching backward, we discover that \(v_1\) may itself be the
+image of \(v_2\), which may be the image of \(v_3\), and so forth.
+
+The apparent endpoint becomes the starting point of a new
+investigation.
+
+This style of reasoning extends far beyond Jordan canonical form.
+Mathematical problem solving often involves changing direction,
+reversing a map, reconstructing causes from consequences, or asking
+what hidden structure must exist in order to produce what we already
+observe.
+
+
+% -------------------------------------------------
+\subsection*{Broadening Intuition}
+% -------------------------------------------------
+
+There is another lesson worth carrying beyond this particular topic.
+
+At some point in mathematical study, intuition must become broader
+than formal manipulation alone.
+
+Proofs are indispensable.  Computation is indispensable.  Precise
+definitions are indispensable.  But when a subject becomes buried
+under increasingly abstruse notation or lengthy algebra, repeatedly
+pushing symbols around may not be the best way to gain understanding.
+
+Sometimes one should temporarily put the formalism aside and ask:
+
+\begin{center}
+\emph{What is actually happening here?}
+\end{center}
+
+That was the purpose of the practical analogies used in this note.
+They were not substitutes for proof.  Rather, they provided another
+way of seeing the structure that the proof was describing.
+
+Once the underlying picture becomes visible, one can return to the
+formal mathematics with a much better sense of why each equation is
+there.
+
+A useful habit is therefore
+
+\[
+\boxed{
+\text{formal theory}
+\;\longrightarrow\;
+\text{intuition}
+\;\longrightarrow\;
+\text{return to the formal theory}.
+}
+\]
+
+The second encounter with the mathematics is often much clearer than
+the first.
+
+
+% -------------------------------------------------
+\end{comment}
+% =================================================
+\section{Conclusion}
+% =================================================
+
+We began this note with one of the most familiar ideas in linear
+algebra: diagonalization.  When a matrix possesses enough linearly
+independent eigenvectors, the situation is remarkably clean.  We form
+a basis from those eigenvectors and obtain
+
+\[
+P^{-1}AP=D,
+\]
+
+where \(D\) is diagonal.
+
+The difficulty appears when the eigenvectors run out.
+
+A repeated eigenvalue may have algebraic multiplicity larger than the
+dimension of its eigenspace, leaving us without enough ordinary
+eigenvectors to construct a basis.  At first sight, this appears to be
+the end of the diagonalization procedure.
+
+But mathematics rarely progresses by simply declaring defeat when the
+most obvious method stops working.
+
+Instead, we changed the question.
+
+Rather than asking only
+
+\[
+\boxed{
+\text{Where does a vector go under }A-\lambda I?
+}
+\]
+
+we also began asking
+
+\[
+\boxed{
+\text{Where could this vector have come from?}
+}
+\]
+
+That small change in perspective opened the door to the entire Jordan
+construction.
+
+Starting from an ordinary eigenvector
+
+\[
+(A-\lambda I)v_1=0,
+\]
+
+we searched backward for a vector \(v_2\) satisfying
+
+\[
+(A-\lambda I)v_2=v_1.
+\]
+
+Then we asked whether \(v_2\) itself had a predecessor:
+
+\[
+(A-\lambda I)v_3=v_2.
+\]
+
+Continuing in this manner produced the chain
+
+\[
+\boxed{
+v_k
+\longrightarrow
+v_{k-1}
+\longrightarrow
+\cdots
+\longrightarrow
+v_2
+\longrightarrow
+v_1
+\longrightarrow
+0.
+}
+\]
+
+What initially appeared to be a shortage of eigenvectors was therefore
+not the absence of structure.  The structure was simply deeper than
+ordinary eigenvectors alone could reveal.
+
+This is one of the broader lessons of the Jordan canonical form.
+
+
+% -------------------------------------------------
+\subsection*{When the Forward Search Fails, Look Backward}
+% -------------------------------------------------
+
+Much of elementary mathematics trains us to think forward:
+
+\[
+\text{given something}
+\quad\longrightarrow\quad
+\text{compute what comes next}.
+\]
+
+That is an enormously useful habit, but it is not the only way
+mathematicians think.
+
+When a forward search becomes blocked, it can be fruitful to reverse
+the direction of the question.
+
+Instead of asking only
+
+\[
+\text{What does this object produce?}
+\]
+
+one may ask
+
+\[
+\text{What could have produced this object?}
+\]
+
+The Jordan chain is a particularly elegant example of this principle.
+
+The ordinary eigenvector \(v_1\) appears to be the end of the story
+because
+
+\[
+(A-\lambda I)v_1=0.
+\]
+
+But by searching backward, we ask whether \(v_1\) might itself be the
+image of some \(v_2\), whether \(v_2\) might be the image of some
+\(v_3\), and so forth.
+
+The apparent endpoint becomes the starting point of a new
+investigation.
+
+This style of reasoning extends far beyond Jordan canonical form.
+Mathematical problem solving often involves changing direction,
+reversing a map, reconstructing causes from consequences, or asking
+what hidden structure must exist in order to produce what we already
+observe.
+
+
+% -------------------------------------------------
+\subsection*{Broadening Intuition}
+% -------------------------------------------------
+
+There is another lesson worth carrying beyond this particular topic.
+
+At some point in mathematical study, intuition must become broader
+than formal manipulation alone.
+
+Proofs are indispensable.  Computation is indispensable.  Precise
+definitions are indispensable.  But when a subject becomes buried
+under increasingly abstruse notation or lengthy algebra, repeatedly
+pushing symbols around may not be the best way to gain understanding.
+
+Sometimes one should temporarily put the formalism aside and ask:
+
+\begin{center}
+\emph{What is actually happening here?}
+\end{center}
+
+That was the purpose of the practical analogies used in this note.
+They were not substitutes for proof.  Rather, they provided another
+way of seeing the structure that the proof was describing.
+
+Once the underlying picture becomes visible, one can return to the
+formal mathematics with a much better sense of why each equation is
+there.
+
+A useful habit is therefore
+
+\[
+\boxed{
+\text{formal theory}
+\;\longrightarrow\;
+\text{intuition}
+\;\longrightarrow\;
+\text{return to the formal theory}.
+}
+\]
+
+The second encounter with the mathematics is often much clearer than
+the first.
+
+The Jordan canonical form therefore leaves us with a lesson that is
+larger than the decomposition itself.  When a familiar method reaches
+an obstruction, the answer is not always to push the same calculation
+harder.  Sometimes progress comes from changing the question, reversing
+the direction of thought, or enlarging the framework in which the
+problem is being viewed.
+
+In our case, the failure of ordinary diagonalization was not the end
+of the story.  It was precisely the obstruction that led us to
+generalized eigenvectors, Jordan chains, and ultimately a richer
+understanding of the transformation.
+
+\begin{comment}
+    
+
+\addcontentsline{toc}{section}{References}
+
+\begin{thebibliography}{9}
+
+\bibitem{Finkbeiner}
+Daniel T. Finkbeiner II,
+\emph{Introduction to Matrices and Linear Transformations},
+3rd ed.,
+W. H. Freeman and Company,
+San Francisco.
+\end{thebibliography}
+\end{comment}
+% =================================================
+\addcontentsline{toc}{section}{References}
+
+\begin{thebibliography}{9}
+
+\bibitem{Finkbeiner}
+Daniel T. Finkbeiner II,
+\emph{Introduction to Matrices and Linear Transformations},
+3rd ed.,
+W. H. Freeman and Company,
+San Francisco.
+
+\bibitem{HornJohnson}
+Roger A. Horn and Charles R. Johnson,
+\emph{Matrix Analysis},
+2nd ed.,
+Cambridge University Press,
+Cambridge,
+2013.
+
+\end{thebibliography}
+\end{document}
